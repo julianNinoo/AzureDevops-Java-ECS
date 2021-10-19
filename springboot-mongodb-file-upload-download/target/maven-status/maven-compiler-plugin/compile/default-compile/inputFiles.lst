@@ -1,0 +1,4 @@
+/home/julian/imageapirest/springboot-mongodb-file-upload-download/src/main/java/com/demo/fileUpload/FileUploadApplication.java
+/home/julian/imageapirest/springboot-mongodb-file-upload-download/src/main/java/com/demo/fileUpload/model/LoadFile.java
+/home/julian/imageapirest/springboot-mongodb-file-upload-download/src/main/java/com/demo/fileUpload/service/FileService.java
+/home/julian/imageapirest/springboot-mongodb-file-upload-download/src/main/java/com/demo/fileUpload/controller/FileController.java
