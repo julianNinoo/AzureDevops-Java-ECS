@@ -1,0 +1,62 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+
+- script: |
+     cd springboot-mongodb-file-upload-download
+     mvn clean install
+  displayName: compile
+
+
+#- task: SonarQubePrepare@4
+ # inputs:
+#    SonarQube: '<sonarqube connection from dropdown>'
+ #   scannerMode: 'MSBuild'
+#    projectKey: '<your project key>'
+#    projectName: '<your project name>'
+#    projectVersion: '<optional>'
+#- task: SonarQubeAnalyze@4   
+#- task: SonarQubePublish@4
+ # inputs:
+ #   pollingTimeoutSec: '300'
+#displayName: 'static code analysis'
+
+- script: |
+      cd $(APP_DIR)
+      mvn clean post-integration-test
+  displayName: unit tests
+- script: |
+     cd $(APP_DIR)
+     mvn dependency-check:check
+  displayName:  dependency scanning
+- script: |
+    cd $(APP_DIR)
+    docker build -t $(APP_NAME):$(TAG) .        
+  displayName:  build image
+- script: |
+    aws configure set aws_access_key_id $(AWS_ACCESS_KEY)
+    aws configure set aws_secret_access_key $(AWS_SECRET_KEY)
+  displayName:  aws configure
+- script: |
+    aws ecr get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin $(ID).dkr.ecr.$(AWS_REGION).amazonaws.com 
+  displayName:  login ecr
+- script: |
+    docker tag $(APP_NAME) $(ID).dkr.ecr.$(AWS_REGION).amazonaws.com/$(REPOSITORY)     
+  displayName:  docker tag
+- script: |
+    docker push $(ID).dkr.ecr.$(AWS_REGION).amazonaws.com/$(REPOSITORY)    
+  displayName:  docker push
+  
+- script: |
+    pip install ecs-deploy
+    ecs deploy  $(ARN_CLUSTER) $(SERVICE_NAME) --region $(AWS_REGION)  --access-key-id  $(AWS_ACCESS_KEY) --secret-access-key $(AWS_SECRET_KEY)
+  displayName:   'deploy to ECS'
